@@ -3,10 +3,12 @@
 // array to push external data into
 var bardata = [];
 
+// needed later to record original colour of bar when tooltip is used.
 var tempColour;
 
 d3.tsv('js/data.tsv', function(data) {
 
+	// place tsv data in an array we can use.
 	for (key in data) {
 		bardata.push(data[key].value);
 		console.log(bardata);
@@ -45,6 +47,7 @@ d3.tsv('js/data.tsv', function(data) {
 					.style('background', 'white')
 					.style('opacity', 0);
 
+	// draw the main bars. Most is styling attributes
 	var myChart = d3.select('#chart').append('svg')
 		.style('background', '#E7E0CB')
 		.attr('width', width + margin.left + margin.right)
@@ -62,7 +65,7 @@ d3.tsv('js/data.tsv', function(data) {
 			})
 			.attr('height', 0)
 			.attr('y', height)
-		.on('mouseover', function(d) {
+		.on('mouseover', function(d) { // tooltip to change colour of bar
 
 			tooltip.transition().style('opacity', 0.9);
 			tooltip.html(d)
@@ -75,12 +78,13 @@ d3.tsv('js/data.tsv', function(data) {
 				.style('opacity', 0.5)
 				.style('fill', 'yellow');
 		})
-		.on('mouseout', function() {
+		.on('mouseout', function() { // put bar back to original state
 			d3.select(this)
 				.style('opacity', 1)
 				.style('fill', tempColour);
 		});
 
+	// animation to produce bouncing effect when chart first draws.
 	myChart.transition()
 		.attr('height', function(d) {
 				return yScale(d);
@@ -94,6 +98,8 @@ d3.tsv('js/data.tsv', function(data) {
 		.duration(1000)
 		.ease('elastic'); 
 
+	// draw the y scale axis
+
 	var vGuideScale = d3.scale.linear()
 					.domain([0, d3.max(bardata)])
 					.range([height, 0]);
@@ -103,10 +109,13 @@ d3.tsv('js/data.tsv', function(data) {
 				.orient('left')
 				.ticks(10);
 
+	// append another g element
 	var vGuide = d3.select('svg').append('g');
 
+	// append the y axis to the graphic
 	vAxis(vGuide);
 
+	// need to move the y axis to the correct position on the graph
 	vGuide.attr('transform', 'translate(' + margin.left + ', ' + margin.top + ')');
 	vGuide.selectAll('path')
 		.style('fill', 'none')
@@ -114,16 +123,19 @@ d3.tsv('js/data.tsv', function(data) {
 
 	vGuide.selectAll('line').style('fill','none').style('stroke','#000');
 
+	// draw the x axis
 	var hAxis = d3.svg.axis()
 				.scale(xScale)
 				.orient('bottom')
 				.tickValues(xScale.domain().filter(function(d, i) {
-					return !(i % (bardata.length /5));
+					return !(i % (bardata.length /5)); // limit the amount of ticks
 				}));
 
 
 	var hGuide = d3.select('svg').append('g');
 	hAxis(hGuide);
+
+	// again, move the x axis to the correct position
 	hGuide.attr('transform', 'translate(' + margin.left + ', ' + (height + margin.top) + ')');
 	hGuide.selectAll('path')
 		.style('fill', 'none')
